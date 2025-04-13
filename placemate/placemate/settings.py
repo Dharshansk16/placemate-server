@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from decouple import config
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-AUTH_USER_MODEL = 'user_auth.User' #custom user model
+
 
 # Application definition
 
@@ -38,20 +39,35 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites', #required by AllAuth
+    #apps installed
+    'allauth',
+    'allauth.account', 
+    'allauth.socialaccount', 
+    'allauth.socialaccount.providers.google',
+    'rest_framework.authtoken', 
+    'dj_rest_auth',       # Login/logout endpoints
+    'dj_rest_auth.registration', #Signup endpoints        
+    'corsheaders', #for cross-origin resource sharing
     'rest_framework',
-    'django_extensions',
+    'django_extensions', #for query testing
+    #apps created
     'user_auth',
     'user_profile',
 ]
 
+SITE_ID=1
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',#new
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'allauth.account.middleware.AccountMiddleware', #new
 ]
 
 ROOT_URLCONF = 'placemate.urls'
@@ -82,7 +98,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'placemate_db',
         'USER': 'placemate_user',
-        'PASSWORD': 'mpom9019',
+        'PASSWORD': config('DB_PASSWORD'),
         'HOST': 'localhost',
         'PORT': '5432',
     }
@@ -129,3 +145,45 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+SITE_ID = 1
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_USERNAME_REQUIRED = False
+AUTH_USER_MODEL = 'user_auth.User' #custom user model
+
+# REST Framework settings
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+# REST_AUTH = {
+#     "USE_JWT": True,
+#     # JWT_AUTH_HTTPONLY should be off
+#     # otherwise dj-rest-auth won't send out refresh tokens.
+#     "JWT_AUTH_HTTPONLY": False,
+#     'USER_DETAILS_SERIALIZER': 'authentication.serializer.UserDetailSerializer',
+#     'USER_LOGIN_FIELDS': 'username'
+# }
+
+#new
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'APP': {
+            'client_id': config('GOOGLE_CLIENT_ID'),
+            'secret': config('GOOGLE_CLIENT_SECRET'),
+            'key': ''
+        }
+    }
+}
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000", 
+]

@@ -10,7 +10,7 @@ class User(AbstractUser):
     profile_picture = models.URLField(blank=True, null=True)  # Google profile image URL
     
     USERNAME_FIELD = 'email' #google auth returns email of the logged in user override username field with email
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ['username'] 
 
 
     def __str__(self):
