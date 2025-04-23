@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     #apps created
     'user_auth',
     'user_profile',
+    'companies',
 ]
 
 SITE_ID=1
@@ -156,10 +157,11 @@ AUTH_USER_MODEL = 'user_auth.User' #custom user model
 
 # REST Framework settings
 REST_FRAMEWORK = {
-    "DEFAULT_AUTHENTICATION_CLASSES": (
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
-    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication', #token authentication
+    ],
 }
+
 
 # REST_AUTH = {
 #     "USE_JWT": True,
