@@ -12,4 +12,5 @@ router.register(r'company-reviews', views.ReviewViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path('fetch-company-info/', views.fetch_and_store_company_info, name='fetch_company_info'),
+    path("view-info/", views.get_company_info, name="view_company_info")
 ]

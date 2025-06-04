@@ -47,6 +47,22 @@ class ReviewViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_company_info(request):
+    company_name = request.query_params.get("company_name")
+    if not company_name:
+        return Response({"error": "Company name is required."}, status=400)
+
+    company = Company.objects.filter(name__iexact=company_name).first()
+    if not company:
+        return Response({"error": "Company not found."}, status=404)
+
+    serializer = CompanySerializer(company)
+    return Response(serializer.data, status=200)
+
+
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def fetch_and_store_company_info(request):
@@ -55,9 +71,13 @@ def fetch_and_store_company_info(request):
         return Response({"error": "Company name is required."}, status=400)
 
     # Check for recent updates
-    existing_company = Company.objects.filter(name__iexact=company_name).first()
-    if existing_company and existing_company.last_updated > timezone.now() - datetime.timedelta(days=30):
-        return Response({"message": f"'{company_name}' is already up-to-date."})
+    company = Company.objects.filter(name__iexact=company_name).first()
+    is_fresh= company and company.last_updated > timezone.now() - datetime.timedelta(days=30)
+
+        
+    if is_fresh:
+        serializer = CompanySerializer(company)
+        return Response(serializer.data)
 
     # Fetch data from Gemini
     raw_json = fetch_company_data(company_name)
@@ -132,4 +152,6 @@ def fetch_and_store_company_info(request):
             culture=review.get("culture", 0),
         )
 
-    return Response({"message": "Company data successfully fetched and stored."}, status=200)
+    serializer= CompanySerializer(company)
+    return Response(serializer.data, status=200)
+
